@@ -8,10 +8,8 @@ import './globalStyles/app.global.scss';
 import Root from './views/Root';
 import configureStore from './store';
 
-
-const store = configureStore();
+const store = configureStore(window.__PRELOADED_STATE__);
 const rootElement = document.getElementById('app');
-
 
 render(
     <AppContainer>
@@ -19,7 +17,6 @@ render(
     </AppContainer>,
     rootElement
 );
-
 
 // allow hot reload. Will ignore Router refresh changed
 if (module.hot) {

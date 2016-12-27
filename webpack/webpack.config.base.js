@@ -1,7 +1,8 @@
-const path = require('path');
+const path   = require('path');
+const config = require('../config');
 
-const host = (process.env.HOST || 'localhost');
-const port = (+process.env.PORT + 1) || 3001;
+const host = (config.appHost || 'localhost');
+const port = (+config.appPort + 1) || 3001;
 
 module.exports = {
     entry: [
@@ -9,9 +10,9 @@ module.exports = {
         path.join(__dirname, '../src/app'),
     ],
     output: {
-        path: path.join(__dirname, '../dist'),
+        path: path.join(__dirname, '../static'),
         filename: (process.env.NODE_ENV === 'production') ? 'bundle.min.js' : 'bundle.js',
-        publicPath: `http://${host}:${port}/dist/`, // path to distribute compiled code
+        publicPath: `http://${host}:${port}/static/`,
     },
     module: {
         loaders: [

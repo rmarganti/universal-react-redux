@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-const fs = require('fs');
+const cssModulesRequireHook = require('css-modules-require-hook');
+const fs                    = require('fs');
+const path                  = require('path');
+const sass                  = require('node-sass');
 
 /**
  * Enable babel transpilation on server
@@ -16,9 +19,16 @@ try {
 require('babel-register')(babelConfig);
 
 /**
- * Ignore styles
+ * Enable CSS modules on the server
  */
-require('ignore-styles');
+cssModulesRequireHook({
+    generateScopedName: '[name]__[local]___[hash:base64:5]',
+    extensions: ['.scss', '.css'],
+    preprocessCss: (data, filename) => sass.renderSync({
+        data: data.replace('~styleConfig', path.join(__dirname, '../src/globalStyles/_config.scss')),
+        file: filename,
+    }).css,
+});
 
 /**
  * Define universal-rendering constants

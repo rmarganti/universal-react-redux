@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 
 import { clearNotification } from 'app/actions';
 import Notification from 'app/components/Notification/Notification';
-import GreetingButton from 'app/components/greetingButton/GreetingButton';
+import GreetingButton from 'app/components/GreetingButton/GreetingButton';
 import { getLoadingStatus, getNotificationState } from 'app/common/selectors';
 import LoadingIndicator from 'app/components/LoadingIndicator/LoadingIndicator';
 

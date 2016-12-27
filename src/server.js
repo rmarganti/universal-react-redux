@@ -6,23 +6,24 @@ import { renderToString } from 'react-dom/server';
 import { Provider } from 'react-redux';
 import { match, RouterContext } from 'react-router';
 
-import config from '../config/config';
+import config from '../config';
 import routes from './routes';
 import configureStore from './store';
+import Html from './server/Html';
 
-const store = configureStore();
-
-// initialize the server and configure support for ejs templates
 const app = new Express();
-const server = new Server(app);
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+/**
+ * Configure path for static assets
+ */
+app.use(Express.static(path.join(__dirname, '../static')));
 
-// define the folder that will be used for static assets
-app.use(Express.static(path.join(__dirname, '../dist')));
-
-// universal routing and rendering
+/**
+ * Configure universal routing and rendering
+ */
 app.get('*', (req, res) => {
+    const store  = configureStore();
+
+    // Match the request URL to our configured routes
     match(
         { routes: routes(store), location: req.url },
         (err, redirectLocation, renderProps) => {
@@ -36,27 +37,31 @@ app.get('*', (req, res) => {
                 return res.redirect(302, redirectLocation.pathname + redirectLocation.search);
             }
 
-            // generate the React markup for the current route
-            let markup;
-            if (renderProps) {
-                // if the current route matched we have renderProps
-                markup = renderToString(<Provider store={store}><RouterContext {...renderProps} /></Provider>);
-            } else {
-                // otherwise we can render a 404 page
-                markup = renderToString(<div>Not found</div>);
+            // If no routes match, send a 404. This should
+            // never happen, as there is a catch-all route
+            if (!renderProps) {
                 res.status(404);
+                return res.send('Not found');
             }
 
-            // render the index template with the embedded React markup
-            return res.render('index', { markup });
+            // generate the React markup for the current route
+            const markup   = renderToString(<Provider store={store}><RouterContext {...renderProps} /></Provider>);
+            const fullHtml = renderToString(<Html store={store} markup={markup} />);
+
+            // Send the final response
+            return res.send(`<!doctype html>\n${fullHtml}`);
         },
     );
 });
 
+/**
+ * Start the server
+ */
+const server = new Server(app);
 server.listen(config.appPort, (err) => {
     if (err) {
         return console.error(err);
     }
 
-    return console.info('==> ✅    App server listening on port %s', config.appPort);
+    return console.info('➡ ✅  App server listening on port %s', config.appPort);
 });
