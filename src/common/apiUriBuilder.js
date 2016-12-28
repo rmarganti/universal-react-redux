@@ -44,7 +44,7 @@ class ApiUriBuilder {
         return `?${
             Object.keys(params)
                 .filter(paramName => params[paramName] || params[paramName] === 0)
-                .map(paramName => {
+                .map((paramName) => {
                     if (paramName === 'pagination') { return this._processPagination(params[paramName]); }
                     if (paramName === 'include') { return this._processIncludes(params[paramName]); }
                     if (paramName === 'sort') { return `sort=${params.sort}`; }

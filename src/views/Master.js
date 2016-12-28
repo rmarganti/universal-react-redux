@@ -8,7 +8,6 @@ import GreetingButton from 'app/components/GreetingButton/GreetingButton';
 import { getLoadingStatus, getNotificationState } from 'app/common/selectors';
 import LoadingIndicator from 'app/components/LoadingIndicator/LoadingIndicator';
 
-
 const Master = ({ children, isLoading, notification, onClearNotification }) => (
     <div className="pa5 tc">
         <GreetingButton />

@@ -4,7 +4,7 @@
         "development": {
             "plugins": [
                 "react-hot-loader/babel",
-                [ "babel-plugin-webpack-alias", { "config": "./webpack/webpack.config.production.js" } ]
+                [ "babel-plugin-webpack-alias", { "config": "./webpack/webpack.config.dev.js" } ]
             ]
         },
         "production": {
@@ -14,7 +14,7 @@
         },
         "test": {
             "plugins": [
-                [ "babel-plugin-webpack-alias", { "config": "./webpack/webpack.config.test.js" } ]
+                [ "babel-plugin-webpack-alias", { "config": "./webpack/webpack.config.dev.js" } ]
             ]
         }
     }

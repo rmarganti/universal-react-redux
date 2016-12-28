@@ -19,7 +19,7 @@ try {
 require('babel-register')(babelConfig);
 
 /**
- * Enable CSS modules on the server
+ * Enable CSS modules and ~styleConfig path alias on the server
  */
 cssModulesRequireHook({
     generateScopedName: '[name]__[local]___[hash:base64:5]',

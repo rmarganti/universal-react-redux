@@ -44,6 +44,8 @@ app.get('*', (req, res) => {
                 return res.send('Not found');
             }
 
+            res.cookie('config', JSON.stringify(config));
+
             // generate the React markup for the current route
             const markup   = renderToString(<Provider store={store}><RouterContext {...renderProps} /></Provider>);
             const fullHtml = renderToString(<Html store={store} markup={markup} />);
@@ -63,5 +65,5 @@ server.listen(config.appPort, (err) => {
         return console.error(err);
     }
 
-    return console.info('➡ ✅  App server listening on port %s', config.appPort);
+    return console.info('➡ ✅  \x1b[32mApp server listening on port %s', config.appPort);
 });
