@@ -7,10 +7,10 @@ import { Provider } from 'react-redux';
 import { match, RouterContext } from 'react-router';
 import styleSheet from 'styled-components/lib/models/StyleSheet';
 
-import config from '../config';
-import routes from './routes';
-import configureStore from './store';
-import Html from './server/Html';
+import config from 'app/config/app';
+import routes from 'app/routes';
+import configureStore from 'app/store';
+import Html from 'app/server/Html';
 
 const app = new Express();
 /**
@@ -67,5 +67,5 @@ server.listen(config.appPort, (err) => {
         return console.error(err);
     }
 
-    return console.info('➡ ✅  \x1b[32mApp server listening on port %s', config.appPort);
+    return console.info('➡ ✅  \x1b[32mApp server listening at http://%s:%s', config.appHost, config.appPort);
 });

@@ -1,5 +1,5 @@
 const path   = require('path');
-const config = require('../config');
+const config = require('../src/config/app');
 
 const host = (config.appHost || 'localhost');
 const port = (+config.appPort + 1) || 3001;

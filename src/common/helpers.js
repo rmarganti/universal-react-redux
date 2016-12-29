@@ -1,4 +1,4 @@
-import serverConfig from '../../config';
+import serverConfig from 'app/config/app';
 
 export const combine = (obj, keyObj) => Object.assign({}, obj, keyObj);
 export const isFunction = fn => fn && {}.toString.call(fn) === '[object Function]';

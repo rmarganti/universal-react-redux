@@ -1,7 +1,7 @@
 const Express = require('express');
 const webpack = require('webpack');
 
-const config        = require('../config');
+const config        = require('../src/config/app');
 const webpackConfig = require('./webpack.config.dev');
 
 const compiler      = webpack(webpackConfig);
@@ -31,6 +31,6 @@ app.listen(port, (err) => {
     if (err) {
         console.error(err);
     } else {
-        console.info('➡ 🚧  \x1b[32mWebpack development server listening on port %s', port);
+        console.info('➡ 🚧  \x1b[32mWebpack development server listening at http://%s:%s', host, port);
     }
 });
