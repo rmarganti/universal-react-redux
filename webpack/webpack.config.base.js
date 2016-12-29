@@ -1,8 +1,7 @@
 const path   = require('path');
-const config = require('../src/config/app');
 
-const host = (config.appHost || 'localhost');
-const port = (+config.appPort + 1) || 3001;
+const host = (process.env.APP_HOST || 'localhost');
+const port = (+process.env.APP_PORT + 1) || 3001;
 
 module.exports = {
     entry: [
@@ -31,7 +30,6 @@ module.exports = {
     resolve: {
         alias: {
             app: path.join(__dirname, '../src'),
-            styleConfig: path.join(__dirname, '../src/globalStyles/_config.scss'),
         },
         extensions: ['', '.js', '.jsx'],
     },

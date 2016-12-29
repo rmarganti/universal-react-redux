@@ -38,6 +38,20 @@ export const compareWithKey = key => (a, b) => {
     return 0;
 };
 
+
+/**
+ * Get an env value with a default fallback
+ *
+ * @param  {String} key
+ * @param  {Mixed}  defaultValue
+ * @return {Mixed}
+ */
+export const getEnv = (key, defaultValue = undefined) => (
+    typeof process.env[key] !== 'undefined'
+        ? process.env[key]
+        : defaultValue
+);
+
 /**
  * Get server config from server-created cookie
  * If no key is provided, the entrie config is reutnred

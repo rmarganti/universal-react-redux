@@ -1,12 +1,11 @@
 const Express = require('express');
 const webpack = require('webpack');
 
-const config        = require('../src/config/app');
 const webpackConfig = require('./webpack.config.dev');
 
 const compiler      = webpack(webpackConfig);
-const host          = config.host || 'localhost';
-const port          = (Number(config.appPort) + 1) || 3001;
+const host          = process.env.APP_HOST || 'localhost';
+const port          = (Number(process.env.APP_PORT) + 1) || 3001;
 const serverOptions = {
     contentBase: `http://${host}:${port}`,
     quiet: true,
