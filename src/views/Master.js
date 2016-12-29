@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
+import styled from 'styled-components';
 
 import { clearNotification } from 'app/actions';
 import Notification from 'app/components/Notification/Notification';
@@ -8,18 +9,32 @@ import GreetingButton from 'app/components/GreetingButton/GreetingButton';
 import { getLoadingStatus, getNotificationState } from 'app/common/selectors';
 import LoadingIndicator from 'app/components/LoadingIndicator/LoadingIndicator';
 
+const Container = styled.div`
+    padding: 5em;
+    text-align: center;
+`;
+
+const Children = styled.div`
+    color: gray;
+    padding-bottom: 6em;
+    padding-top: 6em;
+`;
+
+const StyledLink = styled(Link)`
+    padding: 3em;
+`;
+
 const Master = ({ children, isLoading, notification, onClearNotification }) => (
-    <div className="pa5 tc">
+    <Container>
         <GreetingButton />
+        <Children>{children}</Children>
 
-        <div className="cf pv6 gray">{children}</div>
-
-        <Link to="/" className="pa3">Home</Link>
-        <Link to="/view/12345" className="pa3">Route to view</Link>
+        <StyledLink to="/">Home</StyledLink>
+        <StyledLink to="/view/12345">Route to view</StyledLink>
 
         { (isLoading > 0) && <LoadingIndicator /> }
         { (notification.level) && <Notification notification={notification} onClick={onClearNotification} /> }
-    </div>
+    </Container>
 );
 
 Master.propTypes = {

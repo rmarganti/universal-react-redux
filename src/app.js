@@ -2,11 +2,10 @@ import React from 'react';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 
-import './globalStyles/base.global.css';
-import './globalStyles/app.global.scss';
+import Root from 'app/views/Root';
+import configureStore from 'app/store';
 
-import Root from './views/Root';
-import configureStore from './store';
+import './globalStyles/base.global.css';
 
 const store = configureStore(window.__PRELOADED_STATE__);
 const rootElement = document.getElementById('app');

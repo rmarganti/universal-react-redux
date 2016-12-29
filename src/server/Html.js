@@ -1,6 +1,8 @@
 import React from 'react';
+import styled from 'styled-components';
 
 import config from '../../config';
+import styleConstants from '../config/styles';
 
 const getCssSrc = () => (
     (config.isProduction)
@@ -17,10 +19,16 @@ const getJsSrc = () => {
     return `${host}${port}${path}/${file}`;
 };
 
-const Html = ({ store, markup }) => (
+const Body = styled.body`
+    color: ${styleConstants.textColor};
+    background-color: ${styleConstants.backgroundColor};
+`;
+
+const Html = ({ markup, store, styles }) => (
     <html lang="en">
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <style>{ styles }</style>
             <title>Universal Predux</title>
             {
                 getCssSrc() &&
@@ -30,7 +38,7 @@ const Html = ({ store, markup }) => (
                     />
             }
         </head>
-        <body>
+        <Body>
             <div id="app" dangerouslySetInnerHTML={{ __html: markup }} />
 
             <script
@@ -38,13 +46,14 @@ const Html = ({ store, markup }) => (
                 charSet="UTF-8"
             />
             <script src={getJsSrc()} charSet="UTF-8" />
-        </body>
+        </Body>
     </html>
 );
 
 Html.propTypes = {
-    store: React.PropTypes.object,
     markup: React.PropTypes.string,
+    store: React.PropTypes.object,
+    styles: React.PropTypes.string,
 };
 
 export default Html;

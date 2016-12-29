@@ -5,6 +5,7 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { Provider } from 'react-redux';
 import { match, RouterContext } from 'react-router';
+import styleSheet from 'styled-components/lib/models/StyleSheet';
 
 import config from '../config';
 import routes from './routes';
@@ -48,7 +49,8 @@ app.get('*', (req, res) => {
 
             // generate the React markup for the current route
             const markup   = renderToString(<Provider store={store}><RouterContext {...renderProps} /></Provider>);
-            const fullHtml = renderToString(<Html store={store} markup={markup} />);
+            const styles   = styleSheet.rules().map(rule => rule.cssText).join('\n');
+            const fullHtml = renderToString(<Html markup={markup} store={store} styles={styles} />);
 
             // Send the final response
             return res.send(`<!doctype html>\n${fullHtml}`);
