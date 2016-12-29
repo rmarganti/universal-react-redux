@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import config from 'app/config/app';
-import styleConstants from '../config/styles';
+import styleConstants from 'app/config/styles';
 
 const getCssSrc = () => (
     (config.isProduction)

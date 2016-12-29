@@ -9,14 +9,28 @@ import styleSheet from 'styled-components/lib/models/StyleSheet';
 
 import config from 'app/config/app';
 import routes from 'app/routes';
+import Html from 'app/server/components/Html';
+import OAuth2 from 'app/server/components/OAuth2';
 import configureStore from 'app/store';
-import Html from 'app/server/Html';
 
 const app = new Express();
+
 /**
  * Configure path for static assets
  */
 app.use(Express.static(path.join(__dirname, '../static')));
+
+/**
+ * OAuth2
+ */
+app.get('/oauth/authorize', (req, res) => {
+    res.redirect('<AUTHORIZATION URL>');
+});
+
+app.get('/oauth/request_token', (req, res) => {
+    const markup = renderToString(<OAuth2 code={req.query.code} />);
+    res.send(`<!doctype html>\n${markup}`);
+});
 
 /**
  * Configure universal routing and rendering
