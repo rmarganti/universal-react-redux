@@ -9,7 +9,7 @@ module.exports = {
 
     entry: [
         'react-hot-loader/patch',
-        `webpack-hot-middleware/client?path=http://${host}:${port}/__webpack_hmr`,
+        `webpack-hot-middleware/client?path=${host}:${port}/__webpack_hmr`,
     ].concat(webpackBaseConfig.entry),
 
     output: webpackBaseConfig.output,

@@ -1,4 +1,4 @@
-import { getEnv } from 'app/config/app';
+import { getEnv } from 'app/common/helpers';
 
 module.exports = {
     client: {
@@ -7,6 +7,8 @@ module.exports = {
     },
     auth: {
         tokenHost: getEnv('OAUTH_SERVER_URL'),
+        tokenPath: '/oauth/access_token',
+        authorizePath: '/oauth/authorize',
     },
     scopes: [
         'users.list',

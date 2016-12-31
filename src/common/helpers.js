@@ -1,5 +1,3 @@
-import serverConfig from 'app/config/app';
-
 export const combine = (obj, keyObj) => Object.assign({}, obj, keyObj);
 export const isFunction = fn => fn && {}.toString.call(fn) === '[object Function]';
 
@@ -51,23 +49,6 @@ export const getEnv = (key, defaultValue = undefined) => (
         ? process.env[key]
         : defaultValue
 );
-
-/**
- * Get server config from server-created cookie
- * If no key is provided, the entrie config is reutnred
- *
- * @param  {String} key
- * @return {Object}
- */
-export const getConfig = (key) => {
-    const config = (typeof document === 'undefined')
-        ? serverConfig
-        : JSON.parse(getCookieByName('config'));
-
-    return key
-        ? (config && config[key]) || null
-        : config;
-};
 
 /**
  * Get a cookie by name

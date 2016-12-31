@@ -1,19 +1,18 @@
+import cookieParser from 'cookie-parser';
 import { Server } from 'http';
 import Express from 'express';
 import path from 'path';
-import React from 'react';
-import { renderToString } from 'react-dom/server';
-import { Provider } from 'react-redux';
-import { match, RouterContext } from 'react-router';
-import styleSheet from 'styled-components/lib/models/StyleSheet';
 
 import config from 'app/config/app';
-import routes from 'app/routes';
-import Html from 'app/server/components/Html';
-import OAuth2 from 'app/server/components/OAuth2';
-import configureStore from 'app/store';
+import * as oauth2 from 'app/server/oauth2';
+import serverSideRendering from 'app/server/serverSideRendering';
 
 const app = new Express();
+
+/**
+ * Automatically parse cookies
+ */
+app.use(cookieParser());
 
 /**
  * Configure path for static assets
@@ -21,56 +20,28 @@ const app = new Express();
 app.use(Express.static(path.join(__dirname, '../static')));
 
 /**
- * OAuth2
+ * Redirect to the Authorization server
  */
 app.get('/oauth/authorize', (req, res) => {
-    res.redirect('<AUTHORIZATION URL>');
+    const authorizationUri = oauth2.getAuthorizationUri();
+    res.redirect(authorizationUri);
 });
 
-app.get('/oauth/request_token', (req, res) => {
-    const markup = renderToString(<OAuth2 code={req.query.code} />);
-    res.send(`<!doctype html>\n${markup}`);
-});
+/**
+ * Request an authentication token
+ */
+app.get('/oauth/request_token', (req, res) => oauth2.requestAccessToken(req, res));
+
+/**
+ * Refresh authentication using
+ * refresh token stored as a cookie
+ */
+app.get('/oauth/refresh_token', (req, res) => oauth2.refreshAccessToken(req, res));
 
 /**
  * Configure universal routing and rendering
  */
-app.get('*', (req, res) => {
-    const store  = configureStore();
-
-    // Match the request URL to our configured routes
-    match(
-        { routes: routes(store), location: req.url },
-        (err, redirectLocation, renderProps) => {
-            // in case of error display the error message
-            if (err) {
-                return res.status(500).send(err.message);
-            }
-
-            // in case of redirect propagate the redirect to the browser
-            if (redirectLocation) {
-                return res.redirect(302, redirectLocation.pathname + redirectLocation.search);
-            }
-
-            // If no routes match, send a 404. This should
-            // never happen, as there is a catch-all route
-            if (!renderProps) {
-                res.status(404);
-                return res.send('Not found');
-            }
-
-            res.cookie('config', JSON.stringify(config));
-
-            // generate the React markup for the current route
-            const markup   = renderToString(<Provider store={store}><RouterContext {...renderProps} /></Provider>);
-            const styles   = styleSheet.rules().map(rule => rule.cssText).join('\n');
-            const fullHtml = renderToString(<Html markup={markup} store={store} styles={styles} />);
-
-            // Send the final response
-            return res.send(`<!doctype html>\n${fullHtml}`);
-        },
-    );
-});
+app.get('*', (req, res) => serverSideRendering(req, res));
 
 /**
  * Start the server
@@ -81,5 +52,5 @@ server.listen(config.appPort, (err) => {
         return console.error(err);
     }
 
-    return console.info('➡ ✅  \x1b[32mApp server listening at http://%s:%s', config.appHost, config.appPort);
+    return console.info('➡ ✅  \x1b[32mApp server listening at %s:%s', config.appHost, config.appPort);
 });

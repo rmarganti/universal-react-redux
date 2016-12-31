@@ -11,7 +11,7 @@ const getCssSrc = () => (
 );
 
 const getJsSrc = () => {
-    const host = config.isProduction ? '' : `http://${config.appHost}`;
+    const host = config.isProduction ? '' : `${config.appHost}`;
     const port = config.isProduction ? '' : `:${+config.appPort + 1}`;
     const path = config.isProduction ? '' : '/static';
     const file = config.isProduction ? 'bundle.min.js' : 'bundle.js';

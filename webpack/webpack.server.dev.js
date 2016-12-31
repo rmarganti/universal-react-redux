@@ -7,7 +7,7 @@ const compiler      = webpack(webpackConfig);
 const host          = process.env.APP_HOST || 'localhost';
 const port          = (Number(process.env.APP_PORT) + 1) || 3001;
 const serverOptions = {
-    contentBase: `http://${host}:${port}`,
+    contentBase: `${host}:${port}`,
     quiet: true,
     noInfo: true,
     hot: true,
@@ -30,6 +30,6 @@ app.listen(port, (err) => {
     if (err) {
         console.error(err);
     } else {
-        console.info('➡ 🚧  \x1b[32mWebpack development server listening at http://%s:%s', host, port);
+        console.info('➡ 🚧  \x1b[32mWebpack development server listening at %s:%s', host, port);
     }
 });

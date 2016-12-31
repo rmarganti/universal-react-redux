@@ -6,12 +6,12 @@ const port = (+process.env.APP_PORT + 1) || 3001;
 module.exports = {
     entry: [
         // 'babel-polyfill', // might need later to support old browsers
-        path.join(__dirname, '../src/app'),
+        path.join(__dirname, '../src/client'),
     ],
     output: {
         path: path.join(__dirname, '../static'),
         filename: (process.env.NODE_ENV === 'production') ? 'bundle.min.js' : 'bundle.js',
-        publicPath: `http://${host}:${port}/static/`,
+        publicPath: `${host}:${port}/static/`,
     },
     module: {
         loaders: [
