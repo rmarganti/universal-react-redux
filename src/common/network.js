@@ -22,6 +22,7 @@ get(
 
 */
 
+import 'isomorphic-fetch';
 import { isFunction } from './helpers';
 
 /**
@@ -31,9 +32,10 @@ import { isFunction } from './helpers';
  * @param  {Object}          request
  * @param  {Function}        onSuccess
  * @param  {Function|Object} onError
+ * @param  {Object}          additionalHeaders
  */
-export const get = (url, onSuccess = null, onError = null) =>
-    goFetch(url, { method: 'GET' }, onSuccess, onError);
+export const get = (url, onSuccess = null, onError = null, additionalHeaders = {}) =>
+    goFetch(url, { method: 'GET', headers: additionalHeaders }, onSuccess, onError, additionalHeaders);
 
 /**
  * Make a POST request
@@ -42,9 +44,10 @@ export const get = (url, onSuccess = null, onError = null) =>
  * @param  {Object}          request
  * @param  {Function}        onSuccess
  * @param  {Function|Object} onError
+ * @param  {Object}          additionalHeaders
  */
-export const post = (url, body, onSuccess = null, onError = null) =>
-    goFetch(url, { method: 'POST', body: JSON.stringify(body) }, onSuccess, onError);
+export const post = (url, body, onSuccess = null, onError = null, additionalHeaders = {}) =>
+    goFetch(url, { method: 'POST', body: JSON.stringify(body), headers: additionalHeaders }, onSuccess, onError);
 
 /**
  * Make a file(s) POST request
@@ -53,13 +56,15 @@ export const post = (url, body, onSuccess = null, onError = null) =>
  * @param  {Object}          request
  * @param  {Function}        onSuccess
  * @param  {Function|Object} onError
+ * @param  {Object}          additionalHeaders
  */
-export const postFiles = (url, body, onSuccess = null, onError = null) =>
+export const postFiles = (url, body, onSuccess = null, onError = null, additionalHeaders = {}) =>
     goFetch(url, {
         method: 'POST',
         body,
         headers: {
             Accept: 'application/vnd.api+json',
+            ...additionalHeaders,
         },
     }, onSuccess, onError);
 
@@ -70,9 +75,10 @@ export const postFiles = (url, body, onSuccess = null, onError = null) =>
  * @param  {Object}          request
  * @param  {Function}        onSuccess
  * @param  {Function|Object} onError
+ * @param  {Object}          additionalHeaders
  */
-export const patch = (url, body, onSuccess = null, onError = null) =>
-    goFetch(url, { method: 'PATCH', body: JSON.stringify(body) }, onSuccess, onError);
+export const patch = (url, body, onSuccess = null, onError = null, additionalHeaders = {}) =>
+    goFetch(url, { method: 'PATCH', body: JSON.stringify(body), headers: additionalHeaders }, onSuccess, onError);
 
 /**
  * Make a DELETE request
@@ -81,9 +87,10 @@ export const patch = (url, body, onSuccess = null, onError = null) =>
  * @param  {Object}          request
  * @param  {Function}        onSuccess
  * @param  {Function|Object} onError
+ * @param  {Object}          additionalHeaders
  */
-export const destroy = (url, body, onSuccess = null, onError = null) =>
-    goFetch(url, { method: 'DELETE', body: JSON.stringify(body) }, onSuccess, onError);
+export const destroy = (url, body, onSuccess = null, onError = null, additionalHeaders = {}) =>
+    goFetch(url, { method: 'DELETE', body: JSON.stringify(body), headers: additionalHeaders }, onSuccess, onError);
 
 /**
  * Make an API request
@@ -97,14 +104,15 @@ const goFetch = (url, request, onSuccess = null, onError = null) => {
     const updatedRequest = {
         ...request,
         method: request.method || 'GET',
-        credentials: request.credentials || 'same-origin',
-        headers: request.headers || {
+        credentials: request.credentials || 'include',
+        headers: {
             Accept: 'application/vnd.api+json',
             'Content-Type': 'application/json',
+            ...request.headers,
         },
     };
 
-    fetch(url, updatedRequest)
+    return fetch(url, updatedRequest)
         .then(checkStatus)
         .then(parseResponse)
         .then(response => handleSuccess(response, onSuccess))
@@ -152,9 +160,7 @@ const parseResponse = (response) => {
  * @param  {Object|null}     response
  * @param  {Function|Object} onSuccess
  */
-const handleSuccess = (response, onSuccess) => {
-    onSuccess(response);
-};
+const handleSuccess = (response, onSuccess) => onSuccess(response);
 
 /**
  * Handle any Error that gets thrown, parsing JSON as necessary
@@ -164,37 +170,41 @@ const handleSuccess = (response, onSuccess) => {
  */
 const handleError = (error, onError) => {
     if (onError === null) {
+        // No handler has been defined. Let it bubble down.
         throw error;
     }
 
-    if (error.response) {
-        error.response.json().then((json) => {
-            const errors = json.errors.map(jsonError => jsonError.detail).join('\n');
+    return (error.response)
+        ? error.response.json().then((json) => {
+            const errors = (typeof json.errors !== 'undefined')
+                ? json.errors.map(jsonError => jsonError.detail).join('\n')
+                : json.message;
             const updatedError = new Error(errors);
             updatedError.response = error.response;
-            directError(updatedError, onError);
-        }).catch(() => directError(error, onError));
-
-        return;
-    }
-
-    directError(error, onError);
+            updatedError.json = json;
+            return directError(updatedError, onError);
+        }).catch(() => directError(error, onError))
+        : directError(error, onError);
 };
 
 /**
- * Pass error off to the correct handler
+ * Pass error off to the correct handler. Additionally, return the Error so that
+ * the PromiseMiddleware can keep a look out for authentication errors.
  *
  * @param  {Error}           error
  * @param  {Function|Object} onError
  */
 const directError =  (error, onError) => {
     if (isFunction(onError)) {
-        return onError(error);
+        onError(error);
+        return error;
     }
 
     if (error.response && error.response.status && error.response.status in onError) {
-        return onError[error.response.status](error);
+        onError[error.response.status](error);
+        return (error.response.status === 401) ? null : error;
     }
 
-    return onError.default(error);
+    onError.default(error);
+    return error;
 };

@@ -1,18 +1,15 @@
 import thunkMiddleware from 'redux-thunk';
-import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
 
-import * as rootReducers from './reducers';
-
-const rootReducer = combineReducers({
-    ...rootReducers,
-});
+import promiseMiddleware from 'app/common/promiseMiddleware';
+import rootReducer from 'app/reducers';
 
 if (typeof window === 'undefined') {
     global.window = {};
 }
 
 const enhancer = compose(
-    applyMiddleware(thunkMiddleware),
+    applyMiddleware(thunkMiddleware, promiseMiddleware),
     window.devToolsExtension ? window.devToolsExtension() : f => f
 );
 

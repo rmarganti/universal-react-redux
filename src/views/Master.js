@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import styled from 'styled-components';
 
 import { clearNotification } from 'app/actions';
+import AuthGate from 'app/components/Auth/AuthGate';
 import Notification from 'app/components/Notification/Notification';
 import GreetingButton from 'app/components/GreetingButton/GreetingButton';
 import { getLoadingStatus, getNotificationState } from 'app/common/selectors';
@@ -26,11 +27,13 @@ const StyledLink = styled(Link)`
 
 const Master = ({ children, isLoading, notification, onClearNotification }) => (
     <Container>
-        <GreetingButton />
-        <Children>{children}</Children>
+        <AuthGate>
+            <GreetingButton />
+            <Children>{children}</Children>
 
-        <StyledLink to="/">Home</StyledLink>
-        <StyledLink to="/view/12345">Route to view</StyledLink>
+            <StyledLink to="/">Home</StyledLink>
+            <StyledLink to="/view/12345">Route to view</StyledLink>
+        </AuthGate>
 
         { (isLoading > 0) && <LoadingIndicator /> }
         { (notification.level) && <Notification notification={notification} onClick={onClearNotification} /> }
