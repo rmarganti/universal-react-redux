@@ -23,7 +23,8 @@ export default {
     authorizeClient: `${baseUri}/oauth/authorize`,
     refreshAuth: `${baseUri}/auth/refresh`,
 
-    fetchExampleEntity: entityId => apiUriBuilder.resolve(`entities/${entityId}`, {
-        include: ['example', 'relationships'],
-    }),
+    /**
+     * Users
+     */
+    fetchCurrentUser: apiUriBuilder('users/current'),
 };
