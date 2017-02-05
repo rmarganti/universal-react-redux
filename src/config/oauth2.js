@@ -8,10 +8,6 @@ module.exports = {
     auth: {
         tokenHost: getEnv('OAUTH_SERVER_URL'),
         tokenPath: '/oauth/access_token',
-        authorizePath: '/oauth/authorize',
     },
-    scopes: [
-        'users.list',
-        'applications.list',
-    ],
+    scopes: [],
 };

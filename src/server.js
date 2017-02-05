@@ -1,9 +1,12 @@
 import cookieParser from 'cookie-parser';
-import { Server } from 'http';
 import Express from 'express';
+import { Server } from 'http';
 import path from 'path';
+import bodyParser from 'body-parser';
 
 import config from 'app/config/app';
+import createProxyServer from 'app/server/createProxyServer';
+import enableDevFeatures from 'app/server/enableDevFeatures';
 import * as oauth2 from 'app/server/oauth2';
 import serverSideRendering from 'app/server/serverSideRendering';
 
@@ -15,33 +18,33 @@ const app = new Express();
 app.use(cookieParser());
 
 /**
+ * Enable hot-reload, etc
+ */
+if (!config.isProduction) {
+    enableDevFeatures(app);
+}
+
+/**
  * Configure path for static assets
  */
 app.use(Express.static(path.join(__dirname, '../static')));
 
 /**
- * Redirect to the Authorization server
+ * Create Proxy Server for API
  */
-app.get('/oauth/authorize', (req, res) => {
-    const authorizationUri = oauth2.getAuthorizationUri();
-    res.redirect(authorizationUri);
-});
+createProxyServer(app);
 
 /**
- * Request an authentication token
+ * Handle log-in and token refresh
  */
-app.get('/oauth/request_token', (req, res) => oauth2.requestAccessToken(req, res));
-
-/**
- * Refresh authentication using
- * refresh token stored as a cookie
- */
-app.get('/oauth/refresh_token', (req, res) => oauth2.refreshAccessToken(req, res));
+const jsonParser = bodyParser.json();
+app.post('/auth/login', jsonParser, (req, res) => oauth2.login(req, res));
+app.get('/auth/refresh', oauth2.refresh);
 
 /**
  * Configure universal routing and rendering
  */
-app.get('*', (req, res) => serverSideRendering(req, res));
+app.get('*', serverSideRendering);
 
 /**
  * Start the server
@@ -52,5 +55,5 @@ server.listen(config.appPort, (err) => {
         return console.error(err);
     }
 
-    return console.info('➡ ✅  \x1b[32mApp server listening at %s:%s', config.appHost, config.appPort);
+    return console.info('➡ ✅  \x1b[32mApp server listening at %s:%s\x1b[0m', config.appHost, config.appPort);
 });

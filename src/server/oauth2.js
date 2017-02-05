@@ -1,78 +1,84 @@
-import React from 'react';
-import { renderToString } from 'react-dom/server';
+import { stringify } from 'query-string';
 import serialize from 'serialize-javascript';
 import { create as createOauth2 } from 'simple-oauth2';
 
-import config from 'app/config/app';
+import { get } from 'app/common/network';
 import oauth2Config from 'app/config/oauth2';
-import OAuth2 from 'app/server/components/OAuth2';
+
+const oauth2 = createOauth2({ client: oauth2Config.client, auth: oauth2Config.auth });
 
 /**
- * Get the URL of the Authorization server,
- * including necessary query params
+ * Handle Avenue or Client login request
  *
- * @return {String}
+ * @param {Object} req   Express request object
+ * @param {Object} res   Express response object
  */
-export const getAuthorizationUri = () => {
-    const oauth2   = createOauth2({ client: oauth2Config.client, auth: oauth2Config.auth });
-    const callback = `${config.appHost}:${config.appPort}/oauth/request_token`;
-
-    return oauth2.authorizationCode.authorizeURL({
-        redirect_uri: callback,
-        scope: oauth2Config.scopes.join(','),
-        state: '<state>',
-    });
-};
+export const login = (req, res) => (
+   (typeof req.body.client_id === 'undefined')
+        ? loginAvenue(req, res)
+        : loginClient(req, res)
+);
 
 /**
- * Request an Access Token given the
- * code in the request query params
+ * Handle Avenue login via Password Grant
  *
- * @param  {Object} req Express request object
- * @param  {Object} res Express response object
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
  */
-export const requestAccessToken = (req, res) => {
-    const oauth2      = createOauth2({ client: oauth2Config.client, auth: oauth2Config.auth });
-    const tokenConfig = {
-        code: req.query.code,
-        redirect_uri: `${config.appHost}:${config.appPort}/oauth/request_token`,
-    };
+const loginAvenue = (req, res) => {
+    const loginCredentials = { username: req.body.username, password: req.body.password };
 
-    oauth2.authorizationCode.getToken(tokenConfig)
+    oauth2.ownerPassword.getToken(loginCredentials)
         .then((result) => {
             const accessToken = oauth2.accessToken.create(result);
-            const markup      = renderToString(<OAuth2 token={accessToken} />);
-
-            console.log(accessToken.token);
-
             setSerializedTokenCookie(res, accessToken.token, req.secure);
-            res.send(`<!doctype html>\n${markup}`);
-        }).catch((error) => {
-            console.log('Access Token Error:', error);
-            res.send(error.message);
+            const { refresh_token, ...response } = accessToken.token; // eslint-disable-line no-unused-vars
+            res.send(response);
+        })
+        .catch((error) => {
+            res.clearCookie('auth');
+            res.status(401).send(error.context);
         });
 };
 
 /**
- * TODO:
- * Use the Refresh Token stored in a Cookie
- * in order to retrieve a new Access Token
+ * TODO: Fetch redirect info for Client Auth Code flow
+ *
+ * @param {Object} req   Express request object
+ * @param {Object} res   Express response object
+ */
+const loginClient = (req, res) => {
+    const uri = `${oauth2Config.auth.tokenHost}${oauth2Config.auth.authorizePath}?${stringify(req.body)}`;
+
+    get(
+        uri,
+        response => res.send(response),
+        (error) => {
+            res.status(error.response.status)
+                .send(JSON.stringify(error.json));
+        }
+    );
+};
+
+/**
+ * Refresh Token stored in a Cookie in
+ * order to retrieve a new Access Token
  *
  * @param  {Object} req Express request object
  * @param  {Object} res Express response object
  */
-export const refreshAccessToken = (req, res) => {
-    const oauth2 = createOauth2({ client: oauth2Config.client, auth: oauth2Config.auth });
+export const refresh = (req, res) => {
     const token  = oauth2.accessToken.create(JSON.parse(req.cookies.auth));
 
     token.refresh()
         .then((result) => {
             setSerializedTokenCookie(res, result.token, req.secure);
-            res.send(result.token);
+            const { refresh_token, ...response } = result.token; // eslint-disable-line no-unused-vars
+            res.send(response);
         })
         .catch((error) => {
-            console.log(error);
-            res.status(401).send(error.context.error_description);
+            res.clearCookie('auth');
+            res.status(401).send(error.context);
         });
 };
 
@@ -83,10 +89,9 @@ export const refreshAccessToken = (req, res) => {
  * @param  {Object}  token  Object w/access token, refresh token, etc
  * @param  {Boolean} secure Should this cookie be secure (if using HTTPS)
  */
-const setSerializedTokenCookie = (res, token, secure = false) =>
+export const setSerializedTokenCookie = (res, token, secure = false) =>
     res.cookie('auth', serialize(token, { isJSON: true }), {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         secure,
         httpOnly: true,
-        path: `${config.appHost}:${config.appPort}/oauth/refresh_token`,
     });

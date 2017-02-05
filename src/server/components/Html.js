@@ -4,19 +4,11 @@ import styled from 'styled-components';
 import config from 'app/config/app';
 import styleConstants from 'app/config/styles';
 
-const getCssSrc = () => (
-    (config.isProduction)
-        ? '/styles.css'
-        : null
-);
-
 const getJsSrc = () => {
-    const host = config.isProduction ? '' : `${config.appHost}`;
-    const port = config.isProduction ? '' : `:${+config.appPort + 1}`;
     const path = config.isProduction ? '' : '/static';
     const file = config.isProduction ? 'bundle.min.js' : 'bundle.js';
 
-    return `${host}${port}${path}/${file}`;
+    return `${path}/${file}`;
 };
 
 const Body = styled.body`
@@ -29,14 +21,11 @@ const Html = ({ markup, store, styles }) => (
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <style>{ styles }</style>
-            <title>Universal Predux</title>
-            {
-                getCssSrc() &&
-                    <link
-                        href={getCssSrc()} media="screen, projection"
-                        rel="stylesheet" type="text/css" charSet="UTF-8"
-                    />
-            }
+            <title>Avenue</title>
+            <link
+                href="/styles.css" media="screen, projection"
+                rel="stylesheet" type="text/css" charSet="UTF-8"
+            />
         </head>
         <Body>
             <div id="app" dangerouslySetInnerHTML={{ __html: markup }} />

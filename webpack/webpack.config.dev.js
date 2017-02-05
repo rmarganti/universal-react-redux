@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const webpackBaseConfig = require('./webpack.config.base');
 
 const host = process.env.APP_HOST || 'localhost';
-const port = (+process.env.APP_PORT + 1) || 3001;
+const port = (+process.env.APP_PORT) || 3000;
 
 module.exports = {
     devtool: 'eval',
